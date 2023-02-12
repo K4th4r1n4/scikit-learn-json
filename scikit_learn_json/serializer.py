@@ -5,49 +5,76 @@ import logging
 
 import json
 
+from pathlib import Path
+import os
+from typing import Dict, Union
 import numpy as np
 from sklearn.svm import SVC
 
 from scikit_learn_json.models import Model
+from scikit_learn_json.exceptions import ModelNotSupported
 
 
 class Serializer:
     """ToDo"""
-    def __int__(self):
-        self.svc = SVC
+    svc = SVC
 
-    def serialize(self, model: Model) -> str:
+    def __int__(self):
+        """Initialization."""
+        self._configure_logging()
+
+    def serialize(self, model: Model, out_json_file: str) -> bool:
         """ToDo"""
         match type(model):
             case self.svc:
-                serialized_model = self.serialize_svc(model)
+                serialized_model = self._serialize_svc(model)
             case _:
                 print(f"{type(model)} not supported.")
                 # ToDo: raise Error
                 serialized_model = ""
 
-        return serialized_model
+        with open(out_json_file, "w") as model_json:
+            json.dump(serialized_model, model_json)
+
+        return os.path.isfile(out_json_file)
+
+    def deserialize(self, json_file: Union[str, Path]) -> Model:
+        """ToDo"""
+        with open(json_file) as file:
+            model_dict = json.load(file)
+
+        model_type = model_dict["model_type"]
+        model_parameter = model_dict["model_parameter"]
+        match model_type:
+            case "SVC":
+                model = self._deserialize_svc(model_parameter)
+            case _:
+                raise ModelNotSupported(f"'{model_type}' is not supported.")
+
+        return model
 
     @staticmethod
-    def serialize_svc(model: Model) -> str:
+    def _serialize_svc(model: Model) -> Dict:
         """ToDo."""
-        serialized_model = json.dumps({
+        model_dict = {"model_type": "SVC"}
+        serialized_model = {
             key: [value.tolist(), "np.ndarray", str(value.dtype)]
             if isinstance(value, np.ndarray)
             else value
             for key, value in model.__dict__.items()
-        })
-        return serialized_model
+        }
+        model_dict["model_parameter"] = serialized_model
+        return model_dict
 
     @staticmethod
-    def deserialize_svc(model_dict: str) -> Model:
+    def _deserialize_svc(model_dict: dict) -> Model:
         """ToDo."""
         model = SVC()
         model.__dict__ = {
             key: np.asarray(value[0], dtype=value[2])
             if isinstance(value, list) and value[1] == "np.ndarray"
             else value
-            for key, value in json.loads(model_dict).items()
+            for key, value in zip(model_dict.keys(), model_dict.values())
         }
         return model
 
