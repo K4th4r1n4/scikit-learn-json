@@ -3,7 +3,10 @@ WIP
 
 Minimal example (SVC):
 
-````commandline
+````python
+from sklearn.svm import SVC
+from scikit_learn_json import Serializer
+
 # train model
 x = [[0, 0], [1, 1]]
 y = [0, 1]
