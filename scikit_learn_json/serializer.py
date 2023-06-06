@@ -1,29 +1,29 @@
 # -*- coding: utf-8 -*-
 """Model (de)serialization."""
 
-import logging
-
 import json
-
-from pathlib import Path
+import logging
 import os
-from typing import Dict, Union
+from pathlib import Path
+from typing import Union
+
 import numpy as np
 from sklearn.svm import SVC
 
-from scikit_learn_json.models import Model
 from scikit_learn_json.exceptions import ModelNotSupported
+from scikit_learn_json.models import Model
 
 
 class Serializer:
     """ToDo"""
+
     svc = SVC
 
     def __int__(self):
         """Initialization."""
         self._configure_logging()
 
-    def serialize(self, model: Model, out_json_file: str) -> bool:
+    def serialize(self, model: Model, out_json_file: Union[str, Path]) -> bool:
         """ToDo"""
         match type(model):
             case self.svc:
@@ -31,7 +31,7 @@ class Serializer:
             case _:
                 print(f"{type(model)} not supported.")
                 # ToDo: raise Error
-                serialized_model = ""
+                serialized_model = {"": ""}
 
         with open(out_json_file, "w") as model_json:
             json.dump(serialized_model, model_json)
@@ -54,16 +54,18 @@ class Serializer:
         return model
 
     @staticmethod
-    def _serialize_svc(model: Model) -> Dict:
+    def _serialize_svc(model: Model) -> dict:
         """ToDo."""
-        model_dict = {"model_type": "SVC"}
         serialized_model = {
             key: [value.tolist(), "np.ndarray", str(value.dtype)]
             if isinstance(value, np.ndarray)
             else value
             for key, value in model.__dict__.items()
         }
-        model_dict["model_parameter"] = serialized_model
+        model_dict = {
+            "model_type": "SVC",
+            "model_parameter": serialized_model,
+        }
         return model_dict
 
     @staticmethod
