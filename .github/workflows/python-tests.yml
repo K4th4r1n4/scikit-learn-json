@@ -20,6 +20,6 @@ jobs:
       - name: Run tests & display coverage
         run: |
           pytest tests -v
-          coverage run --source $PACKAGE_NAME -m pytest tests
+          coverage run --source scikit_learn_json -m pytest tests
           coverage report
           coverage xml
