@@ -22,4 +22,9 @@ jobs:
           pytest tests -v
           coverage run --source scikit_learn_json -m pytest tests
           coverage report
-          coverage xml
+          coverage html
+      - name: Archive code coverage html report
+        uses: actions/upload-artifact@v2
+        with:
+          name: code-coverage-report
+          path: src/htmlcov
